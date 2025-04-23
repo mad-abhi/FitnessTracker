@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}FitTrack - Goals{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Goals</h1>
+    <a href="{{ url_for('add_goal') }}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i> Add Goal
+    </a>
+</div>
+
+<section class="mb-5">
+    <h2 class="h4 mb-3">Active Goals</h2>
+    {% if active_goals %}
+        <div class="row">
+            {% for goal in active_goals %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">{{ goal.title }}</h5>
+                        <span class="badge bg-primary">{{ goal.goal_type|capitalize }}</span>
+                    </div>
+                    <div class="card-body">
+                        {% if goal.description %}
+                        <p class="card-text mb-3">{{ goal.description }}</p>
+                        {% endif %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Progress</span>
+                                <span>{{ goal.calculate_progress() }}%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ goal.calculate_progress() }}%" 
+                                     aria-valuenow="{{ goal.calculate_progress() }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-1">
+                                <small class="text-muted">Current: {{ goal.current_value }}</small>
+                                <small class="text-muted">Target: {{ goal.target_value }}</small>
+                            </div>
+                        </div>
+                        
+                        {% if goal.end_date %}
+                        <p class="card-text">
+                            <small class="text-muted">
+                                Target Date: {{ goal.end_date.strftime('%b %d, %Y') }}
+                            </small>
+                        </p>
+                        {% endif %}
+                        
+                        <form action="{{ url_for('update_goal_progress', goal_id=goal.id) }}" method="post" class="mb-3">
+                            <div class="input-group">
+                                <input type="number" step="0.01" name="current_value" class="form-control" value="{{ goal.current_value }}" required>
+                                <button type="submit" class="btn btn-outline-primary">Update Progress</button>
+                            </div>
+                        </form>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('edit_goal', goal_id=goal.id) }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-edit me-1"></i> Edit
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteGoalModal{{ goal.id }}">
+                                <i class="fas fa-trash me-1"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Delete Modal -->
+                <div class="modal fade" id="deleteGoalModal{{ goal.id }}" tabindex="-1" aria-labelledby="deleteGoalModalLabel{{ goal.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteGoalModalLabel{{ goal.id }}">Confirm Delete</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Are you sure you want to delete the goal <strong>{{ goal.title }}</strong>?</p>
+                                <p class="text-danger">This action cannot be undone.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <form action="{{ url_for('delete_goal', goal_id=goal.id) }}" method="post">
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-bullseye fa-4x text-muted"></i>
+                </div>
+                <h3 class="mb-3">No active goals</h3>
+                <p class="mb-4">Set goals to track your fitness progress!</p>
+                <a href="{{ url_for('add_goal') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i> Add First Goal
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</section>
+
+{% if completed_goals %}
+<section>
+    <h2 class="h4 mb-3">Completed Goals</h2>
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Goal</th>
+                            <th>Type</th>
+                            <th>Target</th>
+                            <th>Achieved</th>
+                            <th>Completion Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for goal in completed_goals %}
+                        <tr>
+                            <td>{{ goal.title }}</td>
+                            <td>{{ goal.goal_type|capitalize }}</td>
+                            <td>{{ goal.target_value }}</td>
+                            <td>{{ goal.current_value }}</td>
+                            <td>{{ goal.end_date.strftime('%b %d, %Y') if goal.end_date else 'Not set' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

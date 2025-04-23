@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}FitTrack - Dashboard{% endblock %}
+
+{% block content %}
+<header class="mb-4">
+    <h1 class="mb-0">Dashboard</h1>
+    <p class="text-muted">{{ date.strftime('%A, %B %d, %Y') }}</p>
+</header>
+
+<section class="mb-5">
+    <h2 class="h4 mb-3">Weekly Summary</h2>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 bg-light">
+                <div class="card-body text-center py-4">
+                    <div class="d-flex justify-content-center align-items-center mb-3">
+                        <i class="fas fa-dumbbell text-primary" style="font-size: 24px;"></i>
+                    </div>
+                    <h2 class="display-4 mb-0">{{ workouts_count }}</h2>
+                    <p class="text-muted mb-0">Workouts</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 bg-light">
+                <div class="card-body text-center py-4">
+                    <div class="d-flex justify-content-center align-items-center mb-3">
+                        <i class="fas fa-clock text-warning" style="font-size: 24px;"></i>
+                    </div>
+                    <h2 class="display-4 mb-0">{{ duration_formatted }}</h2>
+                    <p class="text-muted mb-0">Time</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 bg-light">
+                <div class="card-body text-center py-4">
+                    <div class="d-flex justify-content-center align-items-center mb-3">
+                        <i class="fas fa-fire text-success" style="font-size: 24px;"></i>
+                    </div>
+                    <h2 class="display-4 mb-0">{{ total_calories }}</h2>
+                    <p class="text-muted mb-0">Calories</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0">Goals Progress</h2>
+        <a href="{{ url_for('goals') }}" class="btn btn-sm btn-link">View All</a>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            {% if goals %}
+                {% for goal in goals %}
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-1">
+                        <h5 class="mb-0">{{ goal.title }}</h5>
+                        <span>{{ goal.calculate_progress() }}%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ goal.calculate_progress() }}%" 
+                             aria-valuenow="{{ goal.calculate_progress() }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-1">
+                        <small class="text-muted">Current: {{ goal.current_value }}</small>
+                        <small class="text-muted">Target: {{ goal.target_value }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-4">
+                    <p class="mb-2">No goals set yet. Add your first goal!</p>
+                    <a href="{{ url_for('add_goal') }}" class="btn btn-primary">Add Goal</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0">Recent Workouts</h2>
+        <a href="{{ url_for('workouts') }}" class="btn btn-sm btn-link">View All</a>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            {% if recent_workouts %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Date</th>
+                                <th>Duration</th>
+                                <th>Calories</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for workout in recent_workouts %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('view_workout', workout_id=workout.id) }}" class="text-decoration-none">
+                                        {{ workout.name }}
+                                    </a>
+                                </td>
+                                <td>{{ workout.date.strftime('%b %d, %Y') }}</td>
+                                <td>{{ workout.duration }} min</td>
+                                <td>{{ workout.calories or '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <p class="mb-2">No workouts yet. Start your fitness journey!</p>
+                    <a href="{{ url_for('add_workout') }}" class="btn btn-primary">Add Workout</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0">Exercise Library</h2>
+        <a href="{{ url_for('exercises') }}" class="btn btn-sm btn-link">Browse All</a>
+    </div>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-img-top bg-light" style="height: 140px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-dumbbell fa-3x text-secondary"></i>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Bench Press</h5>
+                    <p class="card-text text-muted small">Chest, Triceps, Shoulders</p>
+                    <a href="{{ url_for('exercises') }}" class="btn btn-sm btn-outline-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-img-top bg-light" style="height: 140px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-running fa-3x text-secondary"></i>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Deadlift</h5>
+                    <p class="card-text text-muted small">Back, Hamstrings, Glutes, Core</p>
+                    <a href="{{ url_for('exercises') }}" class="btn btn-sm btn-outline-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-img-top bg-light" style="height: 140px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-walking fa-3x text-secondary"></i>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Squat</h5>
+                    <p class="card-text text-muted small">Quads, Glutes, Core</p>
+                    <a href="{{ url_for('exercises') }}" class="btn btn-sm btn-outline-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
